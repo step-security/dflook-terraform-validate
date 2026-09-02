@@ -1,0 +1,55 @@
+name: terraform-validate
+description: Check a Terraform configuration for errors and annotate the offending lines
+author: 'step-security'
+
+inputs:
+  path:
+    description: Directory holding the module to validate. Defaults to the workspace root.
+    required: false
+    default: "."
+  workspace:
+    description: >-
+      Workspace name made visible to the configuration. Validation evaluates
+      `terraform.workspace`, so a configuration that branches on it validates
+      differently per workspace.
+
+      Forced to `default` for the `remote` and `cloud` backends, where the real
+      workspace is decided remotely. Also taken into account when working out
+      which Terraform version to run.
+    required: false
+    default: "default"
+
+  # --- version discovery ---
+  # No backend is initialised here, so these do not configure anything. They are
+  # read only when the version has to be discovered from remote state.
+  backend_config:
+    description: >-
+      Backend settings as `key=value`, one per line. Used only when discovering
+      which Terraform version to run; no backend is initialised for validation.
+    required: false
+    default: ""
+  backend_config_file:
+    description: >-
+      Paths to backend config files, one per line, relative to the workspace.
+      Used only when discovering which Terraform version to run.
+    required: false
+    default: ""
+
+outputs:
+  failure_reason:
+    description: >-
+      Set to `validate-failed` when the job failed because the configuration is
+      not valid. Left unset when the job fails for any other reason, so it tells
+      an invalid configuration apart from a broken run.
+  failure-reason:
+    description: >-
+      Hyphenated spelling of `failure_reason`, carrying the same value. Both are
+      published so either name can be referenced.
+
+runs:
+  using: node24
+  main: dist/index.js
+
+branding:
+  icon: globe
+  color: purple
